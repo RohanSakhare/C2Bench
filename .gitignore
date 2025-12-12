@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+.env.*
+
+# Docker
+*.log
+/docker-compose.override.yml
+
+# OS & editors
+.DS_Store
+.vscode/
+.idea/
+
+# Data / large generated files
+*.pcap
+*.pcapng
+*.pcap.gz
+logs/
+datasets/
+c2bench.pcap
+
+# Don't accidentally add node_modules etc.
+node_modules/

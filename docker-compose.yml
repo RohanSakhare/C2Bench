@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  c2-server:
+    build: ./c2_server
+    container_name: c2-server
+    networks:
+      - c2-net
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    restart: unless-stopped
+    # optional: expose logs via mounted volume
+    # volumes:
+    #   - ./logs/c2-server:/var/log/c2-server
+
+  c2-agent:
+    build: ./c2_agent
+    container_name: c2-agent
+    networks:
+      - c2-net
+    depends_on:
+      - c2-server
+    restart: unless-stopped
+    # optional mount to inspect /tmp/agent_sys.log on host
+    volumes:
+      - ./logs/agent:/tmp
+
+  zeek:
+    image: zeek/zeek:latest
+    container_name: zeek
+    networks:
+      - c2-net
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: ["zeek", "-i", "eth0", "-C"]
+    restart: unless-stopped
+    volumes:
+      - ./logs/zeek:/var/log/zeek
+
+
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: suricata
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - c2-net
+    depends_on:
+      - c2-server
+    # run suricata on the container interface
+    command: ["suricata", "-i", "eth0", "-v"]
+    restart: unless-stopped
+    volumes:
+      # custom rules and config from host
+      - ./sensors/suricata:/etc/suricata
+      - ./logs/suricata:/var/log/suricata
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: c2bench-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      # lower heap on low-RAM machines (adjust or remove if you have plenty of RAM)
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: c2bench-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+# Optional Filebeat service to ship container logs into Elasticsearch directly
+# Uncomment if you want to run Filebeat as a container and forward logs into ES
+#
+#  filebeat:
+#    image: docker.elastic.co/beats/filebeat:8.12.0
+#    container_name: filebeat
+#    user: root
+#    networks:
+#      - c2-net
+#    volumes:
+#      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+#    depends_on:
+#      - elasticsearch
+#    restart: unless-stopped
+
+volumes:
+  esdata:
+  # optional: host-mounted log directories exist in project folder
+  # logs:
+  #  driver: local
+
+networks:
+  c2-net:
+    driver: bridge
