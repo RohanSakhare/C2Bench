@@ -4,13 +4,13 @@ A lightweight framework to simulate, detect, and analyze Command-and-Control (C2
 
 📌 Overview
 
-C2Bench is a cybersecurity project designed to simulate beacon-based Command & Control (C2) communication and evaluate detection mechanisms using IDS and log analytics technologies.
+C2Bench is a project designed to simulate beacon-based Command & Control (C2) communication and evaluate detection mechanisms using IDS and log analytics technologies.
 
 This framework allows students, researchers, and SOC analysts to:
 
 Generate realistic C2 beacon traffic
 
-Capture network events using Suricata IDS
+Capture network events using Wireshark
 
 Store logs in Elasticsearch
 
@@ -18,7 +18,7 @@ Visualize activity using Kibana dashboards
 
 Understand how C2 traffic behaves across monitoring layers
 
-This project serves as a practical demonstration for academic submissions and cybersecurity interviews.
+
 
 🧱 Project Architecture
 +--------------+         Beacon         +---------------+
@@ -30,7 +30,7 @@ This project serves as a practical demonstration for academic submissions and cy
                         |
                         ▼
                 +---------------+
-                |   Suricata   |
+                |   Wireshark   |
                 +---------------+
                         |
                         ▼
@@ -164,7 +164,6 @@ Dashboard created clear visibility into C2 behaviour
 ✅ Conclusion
 
 C2Bench demonstrates how endpoint, network, and log-based monitoring collaborate in real-world security operations.
-This project is suitable as a completed academic submission and a great addition to your cybersecurity portfolio.
 
 🧑‍💻 Author
 Rohan Sakhare
